@@ -31,3 +31,4 @@ jobs:
           -Djib.to.image=ghcr.io/jooble/dv-finance-exchanger:latest
           -Djib.to.auth.username=${{ github.actor }}
           -Djib.to.auth.password=${{ secrets.GITHUB_TOKEN }}
+        shell: bash
