@@ -7,12 +7,12 @@ services:
     restart: always
     environment:
       - SPRING_TELEGRAM_TOKEN
-      - JAVA_OPTS=-XX:MaxRAMPercentage=70.0 -XX:+UseZGC -XX:-ZUncommit -XX:ZCollectionInterval=30
+      - JAVA_OPTS=-XX:MinRAMPercentage=70.0 -XX:MaxRAMPercentage=70.0 -XX:+UseZGC -XX:-ZUncommit -XX:ZCollectionInterval=30
     deploy:
       resources:
         limits:
           cpus: '0.1'
-          memory: 180M
+          memory: 160M
     depends_on:
       - mongodb
 
