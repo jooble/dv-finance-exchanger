@@ -2,11 +2,12 @@ version: '3.8'
 services:
   bot:
     image: ghcr.io/jooble/dv-finance-exchanger:latest
-    environment:
-      - SPRING_TELEGRAM_TOKEN
     networks:
       - dv-finance-exchanger-net
     restart: always
+    environment:
+      - SPRING_TELEGRAM_TOKEN
+      - JAVA_OPTS=-XX:MaxRAMPercentage=85.0
     deploy:
       resources:
         limits:
