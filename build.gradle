@@ -13,7 +13,7 @@ java {
 }
 
 jib {
-    from.image = "eclipse-temurin:11.0.20.1_1-jre-alpine"
+    from.image = "eclipse-temurin:17.0.8.1_1-jre-alpine"
 }
 
 configurations {
