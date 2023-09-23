@@ -1,0 +1,8 @@
+spring:
+  name: "dv-finance-exchanger"
+
+  telegram:
+    token: "123"
+
+telegrambots:
+  enabled: false
