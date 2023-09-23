@@ -14,9 +14,8 @@ import org.telegram.telegrambots.meta.bots.AbsSender;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 import static dzhezlov.dvfinanceexchanger.command.CommandUtils.*;
 
@@ -80,15 +79,14 @@ public class DoneCommand implements IBotCommand {
     }
 
     private boolean isSomeDayRetry(UserId sender) {
-        List<TradeHistory> tradeHistories = tradeHistoryRepository.findByParticipantsIn(sender).stream()
-                .sorted(Comparator.comparing(TradeHistory::getTimestamp))
-                .collect(Collectors.toList());
+        Optional<TradeHistory> lastTradeHistory =
+                tradeHistoryRepository.findFirstByParticipantsInOrderByTimestampDesc(sender);
 
-        if (tradeHistories.isEmpty()) return false;
+        if (lastTradeHistory.isEmpty()) return false;
 
-        Instant lastTimeStamp = tradeHistories.get(tradeHistories.size() - 1).getTimestamp();
+        Instant lastTimestamp = lastTradeHistory.get().getTimestamp();
 
-        return lastTimeStamp.atZone(ZoneId.systemDefault()).toLocalDate()
+        return lastTimestamp.atZone(ZoneId.systemDefault()).toLocalDate()
                 .isEqual(LocalDate.now());
     }
 }

@@ -17,9 +17,8 @@ import org.telegram.telegrambots.meta.bots.AbsSender;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 import static dzhezlov.dvfinanceexchanger.command.CommandUtils.toUserId;
 
@@ -89,18 +88,14 @@ public class TradeCommand implements IBotCommand {
     }
 
     private boolean isLimitExchangeAvailable(UserId recipient) {
-        List<CommandHistory> commands = commandHistoryRepository.findByUserId(recipient).stream()
-                .filter(command -> command.getCommand().equals(getCommandIdentifier()))
-                .sorted(Comparator.comparing(CommandHistory::getTimestamp))
-                .collect(Collectors.toList());
+        Optional<CommandHistory> lastTrade =
+                commandHistoryRepository.findFirstByUserIdAndCommandOrderByTimestampDesc(recipient, getCommandIdentifier());
 
-        if (commands.isEmpty()) {
+        if (lastTrade.isEmpty()) {
             return true;
         }
 
-        CommandHistory lastExchange = commands.get(commands.size() - 1);
-
-        Instant plus = lastExchange.getTimestamp().plus(limitProperties.getTrade());
+        Instant plus = lastTrade.get().getTimestamp().plus(limitProperties.getTrade());
 
         return plus.truncatedTo(ChronoUnit.DAYS)
                 .isBefore(Instant.now().truncatedTo(ChronoUnit.DAYS));

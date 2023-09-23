@@ -5,10 +5,10 @@ import dzhezlov.dvfinanceexchanger.repository.entity.UserId;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface CommandHistoryRepository extends MongoRepository<CommandHistory, String> {
 
-    List<CommandHistory> findByUserId(UserId userId);
+    Optional<CommandHistory> findFirstByUserIdAndCommandOrderByTimestampDesc(UserId userId, String command);
 }
