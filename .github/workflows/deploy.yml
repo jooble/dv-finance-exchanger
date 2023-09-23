@@ -32,3 +32,20 @@ jobs:
           -Djib.to.auth.username=${{ github.actor }} \
           -Djib.to.auth.password=${{ secrets.GITHUB_TOKEN }}
         shell: bash
+
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: scp docker-compose.yml to aws
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{  }}
+          overwrite: true
+          source: "./docker-compose.yml"
+          target: "./dv/docker-compose.yml"
