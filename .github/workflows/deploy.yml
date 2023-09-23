@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build_and_deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -33,13 +33,6 @@ jobs:
           -Djib.to.auth.password=${{ secrets.GITHUB_TOKEN }}
         shell: bash
 
-  deploy:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
       - name: scp docker-compose.yml to aws
         uses: appleboy/scp-action@v0.1.4
         with:
@@ -48,4 +41,14 @@ jobs:
           key: ${{ secrets.KEY }}
           overwrite: true
           source: "./docker-compose.yml"
-          target: "./dv/docker-compose.yml"
+          target: "~/dv/"
+
+      - name: ssh docker-compose up
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          script: |
+            cd ~/dv/
+            SPRING_TELEGRAM_TOKEN=${{ secrets.TELEGRAM_TOKEN }} docker-compose up -d
