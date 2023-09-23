@@ -28,7 +28,7 @@ jobs:
       - name: Run build with Gradle Wrapper
         run: >
           ./gradlew --no-daemon clean build jib 
-          -Djib.to.image=ghcr.io/jooble/dv-finance-exchanger:latest
+          -Djib.to.image=ghcr.io/jooble/dv-finance-exchanger
           -Djib.to.auth.username=${{ github.actor }}
           -Djib.to.auth.password=${{ secrets.GITHUB_TOKEN }}
         shell: bash
