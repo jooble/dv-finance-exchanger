@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   bot:
-    image: dv-test-image:latest
+    image: ghcr.io/jooble/dv-finance-exchanger:latest
     environment:
       - SPRING_TELEGRAM_TOKEN
     networks:
