@@ -1,0 +1,13 @@
+# copy this file to docker-compose.override.yml for local run
+# don't forget change mongodb.host in properties from "mongodb" to "localhost"
+
+version: '3.8'
+services:
+  bot:
+    profiles:
+      - "donotstart"
+
+
+networks:
+  dv-finance-exchanger-net:
+    external: true

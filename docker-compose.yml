@@ -1,0 +1,38 @@
+version: '3.8'
+services:
+  bot:
+    image: dv-test-image:latest
+    environment:
+      - SPRING_TELEGRAM_TOKEN
+    networks:
+      - dv-finance-exchanger-net
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 128M
+    depends_on:
+      - mongodb
+
+  mongodb:
+    image: mongo:6-jammy
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongodb
+      MONGO_INITDB_ROOT_PASSWORD: mongodb
+    ports:
+      - '27017:27017'
+    volumes:
+      - dv-finance-exchanger-mongodb-data:/data/db
+    networks:
+      - dv-finance-exchanger-net
+
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 128M
+networks:
+  dv-finance-exchanger-net:
+volumes:
+  dv-finance-exchanger-mongodb-data:

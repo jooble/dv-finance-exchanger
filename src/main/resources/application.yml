@@ -1,0 +1,14 @@
+spring:
+  name: "dv-finance-exchanger"
+
+  data:
+    mongodb:
+      authentication-database: admin
+      host: mongodb
+      port: 27017
+      username: mongodb
+      password: mongodb
+      database: dv-finance-exchanger
+
+limit:
+  trade: 2d
