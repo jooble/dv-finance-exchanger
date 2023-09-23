@@ -45,15 +45,14 @@ public class CheckCommand implements IBotCommand {
                     .distinct()
                     .count();
 
-            SendMessage answer = new SendMessage();
-            answer.setChatId(message.getChatId());
-            answer.setReplyToMessageId(message.getMessageId());
-
             StringBuilder answerText = new StringBuilder()
                     .append("Обменов: ")
                     .append(countExchanges)
                     .append("\nС участниками: ")
                     .append(uniqueSenders);
+            SendMessage answer = new SendMessage();
+            answer.setChatId(message.getChatId());
+            answer.setReplyToMessageId(message.getMessageId());
             answer.setText(answerText.toString());
 
             Message sentMessage = absSender.execute(answer);

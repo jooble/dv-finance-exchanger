@@ -53,25 +53,24 @@ public class DoneCommand implements IBotCommand {
 
                 sentMessage = absSender.execute(answer);
             } else {
-                TradeHistory tradeHistory = TradeHistory.builder()
-                        .tradeInitiator(tradeInitiator)
-                        .doneSender(sender)
-                        .participants(List.of(tradeInitiator, sender))
-                        .timestamp(Instant.now())
-                        .build();
 
-                tradeHistoryRepository.save(tradeHistory);
-
-                SendMessage answer = new SendMessage();
-                answer.setChatId(message.getChatId());
-                answer.enableHtml(true);
+                tradeHistoryRepository.save(
+                        TradeHistory.builder()
+                                .tradeInitiator(tradeInitiator)
+                                .doneSender(sender)
+                                .participants(List.of(tradeInitiator, sender))
+                                .timestamp(Instant.now())
+                                .build()
+                );
 
                 StringBuilder answerText = new StringBuilder()
                         .append("Спасибо, произведен обмен между ")
                         .append(toMention(message.getReplyToMessage().getFrom()))
                         .append(" и ")
                         .append(toMention(message.getFrom()));
-
+                SendMessage answer = new SendMessage();
+                answer.setChatId(message.getChatId());
+                answer.enableHtml(true);
                 answer.setText(answerText.toString());
 
                 sentMessage = absSender.execute(answer);

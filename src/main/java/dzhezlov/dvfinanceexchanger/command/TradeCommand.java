@@ -57,15 +57,14 @@ public class TradeCommand implements IBotCommand {
                         .distinct()
                         .count();
 
-                SendMessage answer = new SendMessage();
-                answer.setChatId(message.getChatId());
-                answer.setReplyToMessageId(message.getMessageId());
-
                 StringBuilder answerText = new StringBuilder()
                         .append("Обменов: ")
                         .append(countExchanges)
                         .append("\nС участниками/людьми: ")
                         .append(uniqueSenders);
+                SendMessage answer = new SendMessage();
+                answer.setChatId(message.getChatId());
+                answer.setReplyToMessageId(message.getMessageId());
                 answer.setText(answerText.toString());
 
                 absSender.execute(answer);
