@@ -7,7 +7,7 @@ services:
     restart: always
     environment:
       - SPRING_TELEGRAM_TOKEN
-      - JAVA_OPTS=-XX:MaxRAMPercentage=85.0
+      - JAVA_OPTS=-XX:MaxRAMPercentage=70.0
     deploy:
       resources:
         limits:
