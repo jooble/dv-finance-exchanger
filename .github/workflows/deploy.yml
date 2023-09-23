@@ -45,7 +45,7 @@ jobs:
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.key }}
+          key: ${{ secrets.KEY }}
           overwrite: true
           source: "./docker-compose.yml"
           target: "./dv/docker-compose.yml"
