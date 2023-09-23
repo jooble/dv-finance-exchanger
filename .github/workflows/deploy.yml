@@ -1,0 +1,26 @@
+name: deploy
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+
+      - name: Change wrapper permissions
+        run: chmod +x ./gradlew
+      
+      - name: Run build with Gradle Wrapper
+        run: >
+          ./gradlew --no-daemon clean build jib 
+          -Djib.to.image=ghcr.io/jooble/dv-finance-exchanger:latest 
+          -Djib.to.auth.username=${{ github.actor }}
+          -Djib.to.auth.password=${{ secrets.GITHUB_TOKEN }}
