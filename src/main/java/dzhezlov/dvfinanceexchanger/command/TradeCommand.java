@@ -61,7 +61,7 @@ public class TradeCommand implements IBotCommand {
                 StringBuilder answerText = new StringBuilder()
                         .append("Обменов: ")
                         .append(countExchanges)
-                        .append("\nС участниками/людьми: ")
+                        .append("\nС участниками:  ")
                         .append(uniqueSenders);
                 trustUserRepository.findById(recipient)
                         .ifPresent(user -> answerText.append("\n ✅ Активный участник"));
