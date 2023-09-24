@@ -23,6 +23,6 @@ public class MessageCleaner {
         deleteMessage.setChatId(message.getChatId());
         deleteMessage.setMessageId(message.getMessageId());
 
-        messageCleanerPool.schedule(() -> absSender.execute(deleteMessage), 30, TimeUnit.SECONDS);
+        messageCleanerPool.schedule(() -> absSender.execute(deleteMessage), secs, TimeUnit.SECONDS);
     }
 }
