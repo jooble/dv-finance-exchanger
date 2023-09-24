@@ -50,7 +50,7 @@ public class DoneCommand implements IBotCommand {
                 SendMessage answer = new SendMessage();
                 answer.setChatId(message.getChatId());
                 answer.enableHtml(true);
-                answer.setText("Вы уже сегодня прозводили обмен с " + toMention(message.getReplyToMessage().getFrom()));
+                answer.setText("Вы сегодня уже прозводили обмен с " + toMention(message.getReplyToMessage().getFrom()));
 
                 sentMessage = absSender.execute(answer);
             } else {
