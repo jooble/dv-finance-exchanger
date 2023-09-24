@@ -15,6 +15,10 @@ public class MessageCleaner {
     private final ScheduledExecutorService messageCleanerPool;
 
     public void cleanAfterDelay(AbsSender absSender, Message message) {
+        cleanAfterDelay(absSender, message, 30);
+    }
+
+    public void cleanAfterDelay(AbsSender absSender, Message message, int secs) {
         DeleteMessage deleteMessage = new DeleteMessage();
         deleteMessage.setChatId(message.getChatId());
         deleteMessage.setMessageId(message.getMessageId());
