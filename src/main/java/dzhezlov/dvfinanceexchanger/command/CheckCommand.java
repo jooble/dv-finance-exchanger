@@ -1,5 +1,6 @@
 package dzhezlov.dvfinanceexchanger.command;
 
+import dzhezlov.dvfinanceexchanger.command.utils.FormatUtils;
 import dzhezlov.dvfinanceexchanger.repository.TradeHistoryRepository;
 import dzhezlov.dvfinanceexchanger.repository.TrustUserRepository;
 import dzhezlov.dvfinanceexchanger.repository.entity.TradeHistory;
@@ -15,6 +16,8 @@ import org.telegram.telegrambots.meta.bots.AbsSender;
 import java.util.List;
 
 import static dzhezlov.dvfinanceexchanger.command.utils.CommandUtils.toUserId;
+import static dzhezlov.dvfinanceexchanger.command.utils.FormatUtils.toMention;
+import static dzhezlov.dvfinanceexchanger.command.utils.FormatUtils.toUserFullName;
 
 @Component
 @RequiredArgsConstructor
@@ -48,7 +51,9 @@ public class CheckCommand implements IBotCommand {
                     .count();
 
             StringBuilder answerText = new StringBuilder()
-                    .append("Обменов: ")
+                    .append("Участник: ")
+                    .append(toMention(message.getReplyToMessage().getFrom()))
+                    .append("\nОбменов: ")
                     .append(countTrades)
                     .append("\nС участниками: ")
                     .append(uniqueSenders);
@@ -59,6 +64,7 @@ public class CheckCommand implements IBotCommand {
             answer.setChatId(message.getChatId());
             answer.setReplyToMessageId(message.getMessageId());
             answer.setText(answerText.toString());
+            answer.enableHtml(true);
 
             Message sentMessage = absSender.execute(answer);
             messageCleaner.cleanAfterDelay(absSender, sentMessage);
