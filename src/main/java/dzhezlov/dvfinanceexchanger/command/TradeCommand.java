@@ -1,8 +1,9 @@
 package dzhezlov.dvfinanceexchanger.command;
 
-import dzhezlov.dvfinanceexchanger.config.LimitProperties;
+import dzhezlov.dvfinanceexchanger.config.TradeProperties;
 import dzhezlov.dvfinanceexchanger.repository.CommandHistoryRepository;
 import dzhezlov.dvfinanceexchanger.repository.TradeHistoryRepository;
+import dzhezlov.dvfinanceexchanger.repository.TrustUserRepository;
 import dzhezlov.dvfinanceexchanger.repository.entity.CommandHistory;
 import dzhezlov.dvfinanceexchanger.repository.entity.TradeHistory;
 import dzhezlov.dvfinanceexchanger.repository.entity.UserId;
@@ -20,7 +21,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 
-import static dzhezlov.dvfinanceexchanger.command.CommandUtils.toUserId;
+import static dzhezlov.dvfinanceexchanger.command.utils.CommandUtils.toUserId;
 
 @Component
 @RequiredArgsConstructor
@@ -28,8 +29,9 @@ public class TradeCommand implements IBotCommand {
 
     private final TradeHistoryRepository tradeHistoryRepository;
     private final CommandHistoryRepository commandHistoryRepository;
+    private final TrustUserRepository trustUserRepository;
     private final MessageCleaner messageCleaner;
-    private final LimitProperties limitProperties;
+    private final TradeProperties tradeProperties;
 
     @Override
     public String getCommandIdentifier() {
@@ -48,7 +50,7 @@ public class TradeCommand implements IBotCommand {
             UserId recipient = toUserId(message);
             List<TradeHistory> tradeHistories = tradeHistoryRepository.findByTradeInitiator(recipient);
 
-            if (isLimitExchangeAvailable(recipient)) {
+            if (isLimitTradesAvailable(recipient)) {
                 int countExchanges = tradeHistories.size();
                 long uniqueSenders = tradeHistories.stream()
                         .flatMap(tradeHistory -> tradeHistory.getParticipants().stream())
@@ -61,6 +63,9 @@ public class TradeCommand implements IBotCommand {
                         .append(countExchanges)
                         .append("\nС участниками/людьми: ")
                         .append(uniqueSenders);
+                trustUserRepository.findById(recipient)
+                        .ifPresent(user -> answerText.append("\n ✅ Активный участник"));
+
                 SendMessage answer = new SendMessage();
                 answer.setChatId(message.getChatId());
                 answer.setReplyToMessageId(message.getMessageId());
@@ -71,7 +76,7 @@ public class TradeCommand implements IBotCommand {
                 SendMessage answer = new SendMessage();
                 answer.setChatId(message.getChatId());
                 answer.setReplyToMessageId(message.getMessageId());
-                answer.setText("Не флудим, вызываем команду раз в " + limitProperties.getTrade().toDays() + " дня");
+                answer.setText("Не флудим, вызываем команду раз в " + tradeProperties.getTrade().toDays() + " дня");
 
                 Message sentMessage = absSender.execute(answer);
                 messageCleaner.cleanAfterDelay(absSender, sentMessage);
@@ -87,7 +92,7 @@ public class TradeCommand implements IBotCommand {
         }
     }
 
-    private boolean isLimitExchangeAvailable(UserId recipient) {
+    private boolean isLimitTradesAvailable(UserId recipient) {
         Optional<CommandHistory> lastTrade =
                 commandHistoryRepository.findFirstByUserIdAndCommandOrderByTimestampDesc(recipient, getCommandIdentifier());
 
@@ -95,7 +100,7 @@ public class TradeCommand implements IBotCommand {
             return true;
         }
 
-        Instant plus = lastTrade.get().getTimestamp().plus(limitProperties.getTrade());
+        Instant plus = lastTrade.get().getTimestamp().plus(tradeProperties.getTrade());
 
         return plus.truncatedTo(ChronoUnit.DAYS)
                 .isBefore(Instant.now().truncatedTo(ChronoUnit.DAYS));

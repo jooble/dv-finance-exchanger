@@ -1,13 +1,13 @@
 package dzhezlov.dvfinanceexchanger;
 
-import dzhezlov.dvfinanceexchanger.config.LimitProperties;
+import dzhezlov.dvfinanceexchanger.config.TradeProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
 @SpringBootApplication
-@EnableConfigurationProperties(LimitProperties.class)
+@EnableConfigurationProperties(TradeProperties.class)
 @EnableMongoRepositories
 public class DvFinanceExchangerApplication {
 
