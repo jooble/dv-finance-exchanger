@@ -62,6 +62,7 @@ public class CheckCommand implements IBotCommand {
 
             Message sentMessage = absSender.execute(answer);
             messageCleaner.cleanAfterDelay(absSender, sentMessage);
+            messageCleaner.cleanAfterDelay(absSender, message);
         }
     }
 }
