@@ -16,6 +16,7 @@ public class FormatUtils {
     public static String toUserFullName(User user) {
         StringBuilder builder = new StringBuilder()
                 .append(trimToEmpty(user.getFirstName()))
+                .append(" ")
                 .append(trimToEmpty(user.getLastName()));
 
         if (user.getUserName() != null) {
