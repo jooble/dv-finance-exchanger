@@ -1,27 +1,10 @@
-package dzhezlov.dvfinanceexchanger.command;
+package dzhezlov.dvfinanceexchanger.command.utils;
 
-import dzhezlov.dvfinanceexchanger.repository.entity.UserId;
-import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.User;
 
 import static org.apache.commons.lang3.StringUtils.trimToEmpty;
 
-public class CommandUtils {
-
-    public static boolean isNotReplyMyself(Message message) {
-        Long replyUserId = message.getReplyToMessage().getFrom().getId();
-        Long messageUserId = message.getFrom().getId();
-
-        return !replyUserId.equals(messageUserId);
-    }
-
-    public static UserId toUserId(Message message) {
-        return UserId.builder()
-                .userId(message.getFrom().getId())
-                .chatId(message.getChatId())
-                .build();
-    }
-
+public class FormatUtils {
     public static String toMention(User user) {
         return "<a href='tg://user?id=" +
                 user.getId() +

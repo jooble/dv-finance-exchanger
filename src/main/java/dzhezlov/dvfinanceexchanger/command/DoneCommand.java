@@ -17,7 +17,9 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
-import static dzhezlov.dvfinanceexchanger.command.CommandUtils.*;
+import static dzhezlov.dvfinanceexchanger.command.utils.CommandUtils.isNotReplyMyself;
+import static dzhezlov.dvfinanceexchanger.command.utils.CommandUtils.toUserId;
+import static dzhezlov.dvfinanceexchanger.command.utils.FormatUtils.toMention;
 
 @Component
 @RequiredArgsConstructor

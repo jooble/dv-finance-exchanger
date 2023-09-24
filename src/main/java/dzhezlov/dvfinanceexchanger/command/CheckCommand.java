@@ -1,6 +1,7 @@
 package dzhezlov.dvfinanceexchanger.command;
 
 import dzhezlov.dvfinanceexchanger.repository.TradeHistoryRepository;
+import dzhezlov.dvfinanceexchanger.repository.TrustUserRepository;
 import dzhezlov.dvfinanceexchanger.repository.entity.TradeHistory;
 import dzhezlov.dvfinanceexchanger.repository.entity.UserId;
 import lombok.RequiredArgsConstructor;
@@ -13,13 +14,14 @@ import org.telegram.telegrambots.meta.bots.AbsSender;
 
 import java.util.List;
 
-import static dzhezlov.dvfinanceexchanger.command.CommandUtils.toUserId;
+import static dzhezlov.dvfinanceexchanger.command.utils.CommandUtils.toUserId;
 
 @Component
 @RequiredArgsConstructor
 public class CheckCommand implements IBotCommand {
 
     private final TradeHistoryRepository tradeHistoryRepository;
+    private final TrustUserRepository trustUserRepository;
     private final MessageCleaner messageCleaner;
 
     @Override
@@ -38,7 +40,7 @@ public class CheckCommand implements IBotCommand {
         if (message.isReply()) {
             UserId recipient = toUserId(message.getReplyToMessage());
             List<TradeHistory> tradeHistories = tradeHistoryRepository.findByParticipantsIn(recipient);
-            int countExchanges = tradeHistories.size();
+            int countTrades = tradeHistories.size();
             long uniqueSenders = tradeHistories.stream()
                     .flatMap(tradeHistory -> tradeHistory.getParticipants().stream())
                     .filter(userId -> !(userId.equals(recipient)))
@@ -47,9 +49,12 @@ public class CheckCommand implements IBotCommand {
 
             StringBuilder answerText = new StringBuilder()
                     .append("Обменов: ")
-                    .append(countExchanges)
+                    .append(countTrades)
                     .append("\nС участниками: ")
                     .append(uniqueSenders);
+            trustUserRepository.findById(recipient)
+                    .ifPresent(user -> answerText.append("\n ✅ Активный участник"));
+
             SendMessage answer = new SendMessage();
             answer.setChatId(message.getChatId());
             answer.setReplyToMessageId(message.getMessageId());

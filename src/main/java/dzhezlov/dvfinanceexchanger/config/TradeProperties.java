@@ -7,7 +7,7 @@ import java.time.Duration;
 
 @ConfigurationProperties("limit")
 @Data
-public class LimitProperties {
+public class TradeProperties {
 
     private Duration trade;
 }
