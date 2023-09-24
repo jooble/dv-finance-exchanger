@@ -44,7 +44,6 @@ public class DoneCommand implements IBotCommand {
         if (message.isReply() && isNotReplyMyself(message)) {
             UserId tradeInitiator = toUserId(message.getReplyToMessage());
             UserId sender = toUserId(message);
-            Message sentMessage;
 
             if (isSomeDayRetry(sender)) {
                 SendMessage answer = new SendMessage();
@@ -52,7 +51,8 @@ public class DoneCommand implements IBotCommand {
                 answer.enableHtml(true);
                 answer.setText("Вы сегодня уже прозводили обмен с " + toMention(message.getReplyToMessage().getFrom()));
 
-                sentMessage = absSender.execute(answer);
+                Message sentMessage = absSender.execute(answer);
+                messageCleaner.cleanAfterDelay(absSender, sentMessage);
             } else {
 
                 tradeHistoryRepository.save(
@@ -74,9 +74,8 @@ public class DoneCommand implements IBotCommand {
                 answer.enableHtml(true);
                 answer.setText(answerText.toString());
 
-                sentMessage = absSender.execute(answer);
+                absSender.execute(answer);
             }
-            messageCleaner.cleanAfterDelay(absSender, sentMessage);
         }
 
         messageCleaner.cleanAfterDelay(absSender, message, 3);
