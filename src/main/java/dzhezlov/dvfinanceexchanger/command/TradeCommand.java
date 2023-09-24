@@ -90,6 +90,8 @@ public class TradeCommand implements IBotCommand {
                             .command(getCommandIdentifier())
                             .build()
             );
+        } else {
+            messageCleaner.cleanAfterDelay(absSender, message, 3);
         }
     }
 

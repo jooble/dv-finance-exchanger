@@ -77,8 +77,9 @@ public class DoneCommand implements IBotCommand {
                 sentMessage = absSender.execute(answer);
             }
             messageCleaner.cleanAfterDelay(absSender, sentMessage);
-            messageCleaner.cleanAfterDelay(absSender, message);
         }
+
+        messageCleaner.cleanAfterDelay(absSender, message, 3);
     }
 
     private boolean isSomeDayRetry(UserId sender) {
