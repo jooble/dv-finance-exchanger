@@ -5,6 +5,7 @@ import dzhezlov.dvfinanceexchanger.repository.CommandHistoryRepository;
 import dzhezlov.dvfinanceexchanger.repository.TradeHistoryRepository;
 import dzhezlov.dvfinanceexchanger.repository.TrustUserRepository;
 import dzhezlov.dvfinanceexchanger.repository.entity.CommandHistory;
+import dzhezlov.dvfinanceexchanger.repository.entity.Participant;
 import dzhezlov.dvfinanceexchanger.repository.entity.TradeHistory;
 import dzhezlov.dvfinanceexchanger.repository.entity.UserId;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static dzhezlov.dvfinanceexchanger.command.utils.CommandUtils.toUserId;
 
@@ -47,14 +49,20 @@ public class TradeCommand implements IBotCommand {
     @Override
     public void processMessage(AbsSender absSender, Message message, String[] arguments) {
         if (ArrayUtils.isNotEmpty(arguments)) {
-            UserId recipient = toUserId(message);
-            List<TradeHistory> tradeHistories = tradeHistoryRepository.findByTradeInitiator(recipient);
+            UserId userId = toUserId(message);
+            List<TradeHistory> tradeHistories = tradeHistoryRepository.findByParticipantsUserIdIn(userId)
+                    .stream()
+                    .filter(tradeHistory ->
+                            tradeHistory.getParticipants().stream()
+                                    .allMatch(Participant::isApproveTrade)
+                            )
+                    .collect(Collectors.toList());
 
-            if (isLimitTradesAvailable(recipient)) {
+            if (isLimitTradesAvailable(userId)) {
                 int countExchanges = tradeHistories.size();
                 long uniqueSenders = tradeHistories.stream()
                         .flatMap(tradeHistory -> tradeHistory.getParticipants().stream())
-                        .filter(userId -> !userId.equals(recipient))
+                        .filter(participant -> participant.getUserId().equals(userId))
                         .distinct()
                         .count();
 
@@ -63,8 +71,8 @@ public class TradeCommand implements IBotCommand {
                         .append(countExchanges)
                         .append("\nС участниками:  ")
                         .append(uniqueSenders);
-                trustUserRepository.findById(recipient)
-                        .ifPresent(user -> answerText.append("\n ✅ Активный участник"));
+                trustUserRepository.findById(userId)
+                        .ifPresent(user -> answerText.append("\nМожно доверять: ✅"));
 
                 SendMessage answer = new SendMessage();
                 answer.setChatId(message.getChatId());
@@ -85,7 +93,7 @@ public class TradeCommand implements IBotCommand {
 
             commandHistoryRepository.save(
                     CommandHistory.builder()
-                            .userId(recipient)
+                            .userId(userId)
                             .timestamp(Instant.now())
                             .command(getCommandIdentifier())
                             .build()

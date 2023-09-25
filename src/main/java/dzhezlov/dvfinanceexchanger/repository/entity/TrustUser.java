@@ -10,7 +10,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Builder(toBuilder = true)
 @Document(collection = "trustUsers")
 public class TrustUser {
-
     @Id
     private UserId userId;
     private UserId sender;
