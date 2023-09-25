@@ -23,10 +23,12 @@ public class DvFinanceExchangerApplication {
     public CommandLineRunner commandLineRunner(ApplicationContext ctx) {
         return args -> {
 
-            TradeHistoryRepository bean = ctx.getBean(TradeHistoryRepository.class);
-            bean.deleteAll();
+            try {
+                TradeHistoryRepository bean = ctx.getBean(TradeHistoryRepository.class);
+                bean.deleteAll();
+            } catch (Exception e) {
 
-
+            }
         };
     }
 
