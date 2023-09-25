@@ -4,5 +4,9 @@ spring:
   telegram:
     token: "123"
 
+  data:
+    mongodb:
+      auto-index-creation: false
+
 telegrambots:
   enabled: false
