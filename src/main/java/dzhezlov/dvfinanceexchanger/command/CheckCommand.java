@@ -3,6 +3,7 @@ package dzhezlov.dvfinanceexchanger.command;
 import dzhezlov.dvfinanceexchanger.command.utils.FormatUtils;
 import dzhezlov.dvfinanceexchanger.repository.TradeHistoryRepository;
 import dzhezlov.dvfinanceexchanger.repository.TrustUserRepository;
+import dzhezlov.dvfinanceexchanger.repository.entity.Participant;
 import dzhezlov.dvfinanceexchanger.repository.entity.TradeHistory;
 import dzhezlov.dvfinanceexchanger.repository.entity.UserId;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.bots.AbsSender;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static dzhezlov.dvfinanceexchanger.command.utils.CommandUtils.toUserId;
 import static dzhezlov.dvfinanceexchanger.command.utils.FormatUtils.toMention;
@@ -42,11 +44,18 @@ public class CheckCommand implements IBotCommand {
     public void processMessage(AbsSender absSender, Message message, String[] arguments) {
         if (message.isReply()) {
             UserId recipient = toUserId(message.getReplyToMessage());
-            List<TradeHistory> tradeHistories = tradeHistoryRepository.findByParticipantsIn(recipient);
+            List<TradeHistory> tradeHistories = tradeHistoryRepository.findByParticipantsUserIdIn(recipient)
+                    .stream()
+                    .filter(tradeHistory ->
+                            tradeHistory.getParticipants().stream()
+                                    .allMatch(Participant::isApproveTrade)
+                    )
+                    .collect(Collectors.toList());
+
             int countTrades = tradeHistories.size();
             long uniqueSenders = tradeHistories.stream()
                     .flatMap(tradeHistory -> tradeHistory.getParticipants().stream())
-                    .filter(userId -> !(userId.equals(recipient)))
+                    .filter(participant -> participant.getUserId().equals(recipient))
                     .distinct()
                     .count();
 
@@ -58,7 +67,7 @@ public class CheckCommand implements IBotCommand {
                     .append("\nС участниками: ")
                     .append(uniqueSenders);
             trustUserRepository.findById(recipient)
-                    .ifPresent(user -> answerText.append("\n ✅ Активный участник"));
+                    .ifPresent(user -> answerText.append("\nМожно доверять: ✅"));
 
             SendMessage answer = new SendMessage();
             answer.setChatId(message.getChatId());

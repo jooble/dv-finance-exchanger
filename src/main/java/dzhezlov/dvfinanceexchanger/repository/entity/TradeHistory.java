@@ -16,9 +16,9 @@ public class TradeHistory {
     @Id
     private String id;
     @Indexed
-    private UserId tradeInitiator;
-    private UserId doneSender;
-    @Indexed
-    private List<UserId> participants;
+    private List<Participant> participants;
     private Instant timestamp;
+
+    @Indexed(expireAfterSeconds = 0)
+    private Instant expireTime;
 }
