@@ -55,7 +55,7 @@ public class TradeCommand implements IBotCommand {
                     .filter(tradeHistory ->
                             tradeHistory.getParticipants().stream()
                                     .allMatch(Participant::isApproveTrade)
-                            )
+                    )
                     .collect(Collectors.toList());
 
             if (isLimitTradesAvailable(userId)) {

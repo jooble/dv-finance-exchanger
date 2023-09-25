@@ -1,6 +1,5 @@
 package dzhezlov.dvfinanceexchanger.command;
 
-import dzhezlov.dvfinanceexchanger.command.utils.FormatUtils;
 import dzhezlov.dvfinanceexchanger.repository.TradeHistoryRepository;
 import dzhezlov.dvfinanceexchanger.repository.TrustUserRepository;
 import dzhezlov.dvfinanceexchanger.repository.entity.Participant;
@@ -17,9 +16,9 @@ import org.telegram.telegrambots.meta.bots.AbsSender;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static dzhezlov.dvfinanceexchanger.command.utils.CommandUtils.isNotFromBot;
 import static dzhezlov.dvfinanceexchanger.command.utils.CommandUtils.toUserId;
 import static dzhezlov.dvfinanceexchanger.command.utils.FormatUtils.toMention;
-import static dzhezlov.dvfinanceexchanger.command.utils.FormatUtils.toUserFullName;
 
 @Component
 @RequiredArgsConstructor
@@ -42,7 +41,7 @@ public class CheckCommand implements IBotCommand {
     @SneakyThrows
     @Override
     public void processMessage(AbsSender absSender, Message message, String[] arguments) {
-        if (message.isReply()) {
+        if (message.isReply() && isNotFromBot(message)) {
             UserId recipient = toUserId(message.getReplyToMessage());
             List<TradeHistory> tradeHistories = tradeHistoryRepository.findByParticipantsUserIdIn(recipient)
                     .stream()

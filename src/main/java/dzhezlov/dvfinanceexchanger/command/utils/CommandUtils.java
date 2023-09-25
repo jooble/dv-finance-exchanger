@@ -18,6 +18,10 @@ public class CommandUtils {
         return !replyUserId.equals(messageUserId);
     }
 
+    public static Boolean isNotFromBot(Message message) {
+        return !message.getReplyToMessage().getFrom().getIsBot();
+    }
+
     public static UserId toUserId(Message message) {
         return UserId.builder()
                 .userId(message.getFrom().getId())

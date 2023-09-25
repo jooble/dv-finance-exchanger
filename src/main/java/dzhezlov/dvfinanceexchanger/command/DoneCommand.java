@@ -18,8 +18,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static dzhezlov.dvfinanceexchanger.command.utils.CommandUtils.isNotReplyMyself;
-import static dzhezlov.dvfinanceexchanger.command.utils.CommandUtils.toUserId;
+import static dzhezlov.dvfinanceexchanger.command.utils.CommandUtils.*;
 import static dzhezlov.dvfinanceexchanger.command.utils.FormatUtils.toMention;
 
 @Component
@@ -42,7 +41,7 @@ public class DoneCommand implements IBotCommand {
     @SneakyThrows
     @Override
     public void processMessage(AbsSender absSender, Message message, String[] arguments) {
-        if (message.isReply() && isNotReplyMyself(message)) {
+        if (message.isReply() && isNotReplyMyself(message) && isNotFromBot(message)) {
             UserId replyUserId = toUserId(message.getReplyToMessage());
             UserId userId = toUserId(message);
 
