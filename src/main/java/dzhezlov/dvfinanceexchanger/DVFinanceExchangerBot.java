@@ -1,5 +1,6 @@
 package dzhezlov.dvfinanceexchanger;
 
+import dzhezlov.dvfinanceexchanger.command.CallbackCommand;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -29,5 +30,11 @@ public class DVFinanceExchangerBot extends TelegramLongPollingCommandBot {
 
     @Override
     public void processNonCommandUpdate(Update update) {
+        if (update.hasCallbackQuery()) {
+            getRegisteredCommands().stream()
+                    .filter(iBotCommand -> iBotCommand instanceof CallbackCommand)
+                    .filter(iBotCommand -> ((CallbackCommand) iBotCommand).isCanProcess(this, update))
+                    .forEach(iBotCommand -> ((CallbackCommand) iBotCommand).processCallback(this, update));
+        }
     }
 }
