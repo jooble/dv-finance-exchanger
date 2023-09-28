@@ -3,7 +3,9 @@ package dzhezlov.dvfinanceexchanger.command.utils;
 import dzhezlov.dvfinanceexchanger.repository.entity.UserId;
 import lombok.SneakyThrows;
 import org.telegram.telegrambots.meta.api.methods.groupadministration.GetChatAdministrators;
+import org.telegram.telegrambots.meta.api.methods.groupadministration.GetChatMember;
 import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.api.objects.chatmember.ChatMember;
 import org.telegram.telegrambots.meta.bots.AbsSender;
 
@@ -37,5 +39,15 @@ public class CommandUtils {
 
         return administrators.stream()
                 .anyMatch(admin -> admin.getUser().getId().equals(message.getFrom().getId()));
+    }
+
+    @SneakyThrows
+    public static User fetchUserByUserId(UserId userId, AbsSender absSender) {
+        ChatMember chatMember = absSender.execute(GetChatMember.builder()
+                .chatId(userId.getChatId())
+                .userId(userId.getUserId())
+                .build());
+
+        return chatMember.getUser();
     }
 }

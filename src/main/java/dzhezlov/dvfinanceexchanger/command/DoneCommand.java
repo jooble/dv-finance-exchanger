@@ -11,6 +11,7 @@ import org.telegram.telegrambots.extensions.bots.commandbot.commands.IBotCommand
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.bots.AbsSender;
@@ -92,11 +93,15 @@ public class DoneCommand implements IBotCommand, CallbackCommand {
                 .findFirst();
 
         if (clickedParticipant.isPresent() && !clickedParticipant.get().isApproveTrade()) {
+            Participant anotherParticipant = tradeHistory.getParticipants().stream()
+                    .filter(participant -> !participant.getUserId().equals(clickedUserId))
+                    .findFirst()
+                    .get();
+            User anotherUser = fetchUserByUserId(anotherParticipant.getUserId(), absSender);
+
+
             if (CALLBACK_APPROVE.equals(callBackAnswer)) {
-                Participant sameParticipant = tradeHistory.getParticipants().stream()
-                        .filter(participant -> participant.getUserId().equals(clickedUserId))
-                        .findFirst()
-                        .get();
+                Participant sameParticipant = clickedParticipant.get();
 
                 sameParticipant.setApproveTrade(true);
                 tradeHistory.setExpireTime(null);
@@ -107,7 +112,7 @@ public class DoneCommand implements IBotCommand, CallbackCommand {
                         .append("Спасибо, произведен обмен между ")
                         .append(toMention(update.getCallbackQuery().getFrom()))
                         .append(" и ")
-                        .append(toMention(message.getFrom()));
+                        .append(toMention(anotherUser));
                 SendMessage answer = new SendMessage();
                 answer.setChatId(message.getChatId());
                 answer.enableHtml(true);
@@ -124,7 +129,7 @@ public class DoneCommand implements IBotCommand, CallbackCommand {
                         .append("Обмен между ")
                         .append(toMention(update.getCallbackQuery().getFrom()))
                         .append(" и ")
-                        .append(toMention(message.getFrom()))
+                        .append(toMention(anotherUser))
                         .append(" отклонен");
                 SendMessage answer = new SendMessage();
                 answer.setChatId(message.getChatId());
