@@ -62,7 +62,7 @@ public class TradeCommand implements IBotCommand {
                 int countExchanges = tradeHistories.size();
                 long uniqueSenders = tradeHistories.stream()
                         .flatMap(tradeHistory -> tradeHistory.getParticipants().stream())
-                        .filter(participant -> participant.getUserId().equals(userId))
+                        .filter(participant -> !participant.getUserId().equals(userId))
                         .distinct()
                         .count();
 
@@ -80,6 +80,14 @@ public class TradeCommand implements IBotCommand {
                 answer.setText(answerText.toString());
 
                 absSender.execute(answer);
+
+                commandHistoryRepository.save(
+                        CommandHistory.builder()
+                                .userId(userId)
+                                .timestamp(Instant.now())
+                                .command(getCommandIdentifier())
+                                .build()
+                );
             } else {
                 SendMessage answer = new SendMessage();
                 answer.setChatId(message.getChatId());
@@ -90,14 +98,6 @@ public class TradeCommand implements IBotCommand {
                 messageCleaner.cleanAfterDelay(absSender, sentMessage);
                 messageCleaner.cleanAfterDelay(absSender, message);
             }
-
-            commandHistoryRepository.save(
-                    CommandHistory.builder()
-                            .userId(userId)
-                            .timestamp(Instant.now())
-                            .command(getCommandIdentifier())
-                            .build()
-            );
         } else {
             messageCleaner.cleanAfterDelay(absSender, message, 3);
         }

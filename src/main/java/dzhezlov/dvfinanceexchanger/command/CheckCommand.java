@@ -54,7 +54,7 @@ public class CheckCommand implements IBotCommand {
             int countTrades = tradeHistories.size();
             long uniqueSenders = tradeHistories.stream()
                     .flatMap(tradeHistory -> tradeHistory.getParticipants().stream())
-                    .filter(participant -> participant.getUserId().equals(recipient))
+                    .filter(participant -> !participant.getUserId().equals(recipient))
                     .distinct()
                     .count();
 
