@@ -92,7 +92,7 @@ public class TradeCommand implements IBotCommand {
                 SendMessage answer = new SendMessage();
                 answer.setChatId(message.getChatId());
                 answer.setReplyToMessageId(message.getMessageId());
-                answer.setText("Не флудим, вызываем команду раз в " + tradeProperties.getTrade().toDays() + " дня");
+                answer.setText("Не флудим, вызываем команду раз в " + tradeProperties.getTrade().toDays() + 1 + " дня");
 
                 Message sentMessage = absSender.execute(answer);
                 messageCleaner.cleanAfterDelay(absSender, sentMessage);
