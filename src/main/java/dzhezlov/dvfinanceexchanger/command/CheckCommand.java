@@ -4,6 +4,7 @@ import dzhezlov.dvfinanceexchanger.repository.TradeHistoryRepository;
 import dzhezlov.dvfinanceexchanger.repository.TrustUserRepository;
 import dzhezlov.dvfinanceexchanger.repository.entity.Participant;
 import dzhezlov.dvfinanceexchanger.repository.entity.TradeHistory;
+import dzhezlov.dvfinanceexchanger.repository.entity.TrustUser;
 import dzhezlov.dvfinanceexchanger.repository.entity.UserId;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -11,14 +12,16 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.extensions.bots.commandbot.commands.IBotCommand;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.bots.AbsSender;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static dzhezlov.dvfinanceexchanger.command.utils.CommandUtils.isNotFromBot;
-import static dzhezlov.dvfinanceexchanger.command.utils.CommandUtils.toUserId;
+import static dzhezlov.dvfinanceexchanger.command.utils.CommandUtils.*;
 import static dzhezlov.dvfinanceexchanger.command.utils.FormatUtils.toMention;
+import static dzhezlov.dvfinanceexchanger.command.utils.FormatUtils.toUserFullName;
 
 @Component
 @RequiredArgsConstructor
@@ -65,8 +68,17 @@ public class CheckCommand implements IBotCommand {
                     .append(countTrades)
                     .append("\nС участниками: ")
                     .append(uniqueSenders);
-            trustUserRepository.findById(recipient)
-                    .ifPresent(user -> answerText.append("\nМожно доверять: ✅"));
+            Optional<TrustUser> trustUser = trustUserRepository.findById(recipient);
+
+            if (trustUser.isPresent()) {
+                answerText.append("\nМожно доверять: ✅");
+
+                if (isAdminMessage(message, absSender)) {
+                    User adminUser = fetchUserByUserId(trustUser.orElseThrow().getSender(), absSender);
+                    answerText.append("by ");
+                    answerText.append(toUserFullName(adminUser));
+                }
+            }
 
             SendMessage answer = new SendMessage();
             answer.setChatId(message.getChatId());
