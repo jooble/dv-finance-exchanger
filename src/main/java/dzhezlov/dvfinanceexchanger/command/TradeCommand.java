@@ -69,7 +69,7 @@ public class TradeCommand implements IBotCommand {
                 StringBuilder answerText = new StringBuilder()
                         .append("Обменов: ")
                         .append(countExchanges)
-                        .append("\nС участниками:  ")
+                        .append("\nС уникальными участниками:  ")
                         .append(uniqueSenders);
                 trustUserRepository.findById(userId)
                         .ifPresent(user -> answerText.append("\nМожно доверять: ✅"));

@@ -66,7 +66,7 @@ public class CheckCommand implements IBotCommand {
                     .append(toMention(message.getReplyToMessage().getFrom()))
                     .append("\nОбменов: ")
                     .append(countTrades)
-                    .append("\nС участниками: ")
+                    .append("\nС уникальными участниками: ")
                     .append(uniqueSenders);
             Optional<TrustUser> trustUser = trustUserRepository.findById(recipient);
 
