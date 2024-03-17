@@ -7,7 +7,7 @@ services:
     restart: always
     environment:
       - SPRING_TELEGRAM_TOKEN
-      - JAVA_OPTS=-XX:MinRAMPercentage=70.0 -XX:MaxRAMPercentage=70.0 -XX:+UseZGC -XX:-ZUncommit -XX:ZCollectionInterval=30
+      - JAVA_OPTS=-XX:MinRAMPercentage=60.0 -XX:MaxRAMPercentage=60.0 -XX:+UseZGC -XX:-ZUncommit -XX:ZCollectionInterval=30
     deploy:
       resources:
         limits:
