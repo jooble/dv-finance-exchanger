@@ -17,6 +17,6 @@ public class CommandHistory {
     @Indexed
     private UserId userId;
     private String command;
-    @Indexed(expireAfter = "14d")
+    @Indexed(expireAfter = "7d")
     private Instant timestamp;
 }
