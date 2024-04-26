@@ -12,4 +12,4 @@ spring:
       database: dv-finance-exchanger
 
 limit:
-  trade: 1d
+  trade: 6d
