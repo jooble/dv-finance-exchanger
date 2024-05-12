@@ -1,6 +1,7 @@
 package dzhezlov.dvfinanceexchanger;
 
 import dzhezlov.dvfinanceexchanger.command.CallbackCommand;
+import dzhezlov.dvfinanceexchanger.service.UserJoinedService;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -17,14 +18,17 @@ public class DVFinanceExchangerBot extends TelegramLongPollingCommandBot {
 
     private final String botToken;
     private final String botUsername;
+    private final UserJoinedService userJoinedService;
 
     public DVFinanceExchangerBot(@Value("${spring.telegram.token}") String botToken,
                                  @Value("${spring.name}") String botUsername,
-                                 List<IBotCommand> commands) {
+                                 List<IBotCommand> commands,
+                                 UserJoinedService userJoinedService) {
         super(botToken);
 
         this.botToken = botToken;
         this.botUsername = botUsername;
+        this.userJoinedService = userJoinedService;
 
         commands.forEach(super::register);
     }
@@ -36,6 +40,10 @@ public class DVFinanceExchangerBot extends TelegramLongPollingCommandBot {
                     .filter(iBotCommand -> iBotCommand instanceof CallbackCommand)
                     .filter(iBotCommand -> ((CallbackCommand) iBotCommand).isCanProcess(this, update))
                     .forEach(iBotCommand -> ((CallbackCommand) iBotCommand).processCallback(this, update));
+        }
+
+        if (update.hasMessage()) {
+            userJoinedService.processMessage(update.getMessage());
         }
     }
 

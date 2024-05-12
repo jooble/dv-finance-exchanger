@@ -8,6 +8,7 @@ import dzhezlov.dvfinanceexchanger.repository.entity.CommandHistory;
 import dzhezlov.dvfinanceexchanger.repository.entity.Participant;
 import dzhezlov.dvfinanceexchanger.repository.entity.TradeHistory;
 import dzhezlov.dvfinanceexchanger.repository.entity.UserId;
+import dzhezlov.dvfinanceexchanger.service.UserJoinedService;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.ArrayUtils;
@@ -34,6 +35,7 @@ public class TradeCommand implements IBotCommand {
     private final TrustUserRepository trustUserRepository;
     private final MessageCleaner messageCleaner;
     private final TradeProperties tradeProperties;
+    private final UserJoinedService userJoinedService;
 
     @Override
     public String getCommandIdentifier() {
@@ -50,6 +52,8 @@ public class TradeCommand implements IBotCommand {
     public void processMessage(AbsSender absSender, Message message, String[] arguments) {
         if (ArrayUtils.isNotEmpty(arguments)) {
             UserId userId = toUserId(message);
+            Instant dataJoined = userJoinedService.getDataJoined(userId);
+
             List<TradeHistory> tradeHistories = tradeHistoryRepository.findByParticipantsUserIdIn(userId)
                     .stream()
                     .filter(tradeHistory ->
@@ -57,6 +61,17 @@ public class TradeCommand implements IBotCommand {
                                     .allMatch(Participant::isApproveTrade)
                     )
                     .collect(Collectors.toList());
+
+            if (dataJoined.isAfter(Instant.now().minus(tradeProperties.getFirstTimeout()))) {
+                SendMessage answer = new SendMessage();
+                answer.setChatId(message.getChatId());
+                answer.setReplyToMessageId(message.getMessageId());
+                answer.setText("Обмен разрешен не ранее " + tradeProperties.getFirstTimeout().toDays() + " дней после вступления в чат.");
+
+                Message sentMessage = absSender.execute(answer);
+                clean(absSender, sentMessage, message);
+                return;
+            }
 
             if (isLimitTradesAvailable(userId)) {
                 int countExchanges = tradeHistories.size();
@@ -92,14 +107,19 @@ public class TradeCommand implements IBotCommand {
                 SendMessage answer = new SendMessage();
                 answer.setChatId(message.getChatId());
                 answer.setReplyToMessageId(message.getMessageId());
-                answer.setText("Не флудим, вызываем команду раз в " + tradeProperties.getTrade().plusDays(1).toDays() + " дня");
+                answer.setText("Не флудим, вызываем команду раз в " + tradeProperties.getTimeout().plusDays(1).toDays() + " дня");
 
                 Message sentMessage = absSender.execute(answer);
-                messageCleaner.cleanAfterDelay(absSender, sentMessage);
-                messageCleaner.cleanAfterDelay(absSender, message);
+                clean(absSender, message, sentMessage);
             }
         } else {
             messageCleaner.cleanAfterDelay(absSender, message, 3);
+        }
+    }
+
+    private void clean(AbsSender absSender, Message... messages) {
+        for (Message message : messages) {
+            messageCleaner.cleanAfterDelay(absSender, message);
         }
     }
 
@@ -111,7 +131,7 @@ public class TradeCommand implements IBotCommand {
             return true;
         }
 
-        Instant plus = lastTrade.get().getTimestamp().plus(tradeProperties.getTrade());
+        Instant plus = lastTrade.get().getTimestamp().plus(tradeProperties.getTimeout());
 
         return plus.truncatedTo(ChronoUnit.DAYS)
                 .isBefore(Instant.now().truncatedTo(ChronoUnit.DAYS));

@@ -6,6 +6,7 @@ import dzhezlov.dvfinanceexchanger.repository.entity.Participant;
 import dzhezlov.dvfinanceexchanger.repository.entity.TradeHistory;
 import dzhezlov.dvfinanceexchanger.repository.entity.TrustUser;
 import dzhezlov.dvfinanceexchanger.repository.entity.UserId;
+import dzhezlov.dvfinanceexchanger.service.UserJoinedService;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Component;
@@ -15,6 +16,8 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.bots.AbsSender;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -30,6 +33,7 @@ public class CheckCommand implements IBotCommand {
     private final TradeHistoryRepository tradeHistoryRepository;
     private final TrustUserRepository trustUserRepository;
     private final MessageCleaner messageCleaner;
+    private final UserJoinedService userJoinedService;
 
     @Override
     public String getCommandIdentifier() {
@@ -78,6 +82,11 @@ public class CheckCommand implements IBotCommand {
                     answerText.append("by ");
                     answerText.append(toUserFullName(adminUser));
                 }
+            }
+
+            if (isAdminMessage(message, absSender)) {
+                Instant dataJoined = userJoinedService.getDataJoined(recipient);
+                answerText.append("\nДата входа: " + ChronoUnit.DAYS.between(dataJoined, Instant.now()) + " дня назад");
             }
 
             SendMessage answer = new SendMessage();

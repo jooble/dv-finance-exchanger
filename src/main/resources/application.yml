@@ -11,5 +11,6 @@ spring:
       password: mongodb
       database: dv-finance-exchanger
 
-limit:
-  trade: 6d
+trade:
+  firstTimeout: 30d
+  timeout: 6d

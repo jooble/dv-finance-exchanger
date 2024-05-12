@@ -5,9 +5,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.time.Duration;
 
-@ConfigurationProperties("limit")
+@ConfigurationProperties("trade")
 @Data
 public class TradeProperties {
 
-    private Duration trade;
+    private Duration firstTimeout;
+    private Duration Timeout;
 }
