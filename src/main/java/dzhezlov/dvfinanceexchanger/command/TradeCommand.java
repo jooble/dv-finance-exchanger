@@ -66,7 +66,7 @@ public class TradeCommand implements IBotCommand {
                 SendMessage answer = new SendMessage();
                 answer.setChatId(message.getChatId());
                 answer.setReplyToMessageId(message.getMessageId());
-                answer.setText("Обмен разрешен не ранее " + tradeProperties.getFirstTimeout().toDays() + " дней после вступления в чат.");
+                answer.setText("Инициация обмена разрешена не ранее " + tradeProperties.getFirstTimeout().toDays() + " дней после вступления в чат.");
 
                 Message sentMessage = absSender.execute(answer);
                 clean(absSender, sentMessage, message);
