@@ -3,6 +3,8 @@ package dzhezlov.dvfinanceexchanger.command.utils;
 import org.apache.commons.lang3.StringUtils;
 import org.telegram.telegrambots.meta.api.objects.User;
 
+import java.util.Set;
+
 import static org.apache.commons.lang3.StringUtils.trimToEmpty;
 
 public class FormatUtils {
@@ -27,6 +29,16 @@ public class FormatUtils {
             builder.append(" (@")
                     .append(user.getUserName())
                     .append(")");
+        }
+
+        return builder.toString();
+    }
+
+    public static String toList(Set<String> set) {
+        StringBuilder builder = new StringBuilder();
+
+        for (String item : set) {
+            builder.append("\n • ").append(item);
         }
 
         return builder.toString();

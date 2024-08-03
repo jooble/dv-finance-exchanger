@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 import static dzhezlov.dvfinanceexchanger.command.utils.CommandUtils.*;
 import static dzhezlov.dvfinanceexchanger.command.utils.FormatUtils.toMention;
+import static dzhezlov.dvfinanceexchanger.command.utils.FormatUtils.toUserFullName;
 
 @Component
 @RequiredArgsConstructor
@@ -58,7 +59,17 @@ public class DoneCommand implements IBotCommand, CallbackCommand {
             if (isSomeDayRetry(userId, replyUserId)) {
                 processFlood(absSender, message);
             } else {
-                processFirstApprove(absSender, message, userId, replyUserId);
+                Participant replyParticipant = Participant.builder()
+                        .userId(replyUserId)
+                        .fullName(toUserFullName(message.getReplyToMessage().getFrom()))
+                        .build();
+                Participant userParticipant = Participant.builder()
+                        .userId(userId)
+                        .fullName(toUserFullName(message.getFrom()))
+                        .approveTrade(true)
+                        .build();
+
+                processFirstApprove(absSender, message, userParticipant, replyParticipant);
             }
         }
 
@@ -104,6 +115,7 @@ public class DoneCommand implements IBotCommand, CallbackCommand {
                 Participant sameParticipant = clickedParticipant.get();
 
                 sameParticipant.setApproveTrade(true);
+                //set to unexpired because trade is approved
                 tradeHistory.setExpireTime(null);
 
                 tradeHistoryRepository.save(tradeHistory);
@@ -144,7 +156,7 @@ public class DoneCommand implements IBotCommand, CallbackCommand {
         }
     }
 
-    private void processFirstApprove(AbsSender absSender, Message message, UserId userId, UserId replyUserId) throws TelegramApiException {
+    private void processFirstApprove(AbsSender absSender, Message message, Participant userParticipant, Participant replyParticipant) throws TelegramApiException {
         StringBuilder answerText = new StringBuilder()
                 .append(toMention(message.getFrom()))
                 .append(" просит подтвердить обмен с ")
@@ -175,19 +187,15 @@ public class DoneCommand implements IBotCommand, CallbackCommand {
         tradeHistoryRepository.save(
                 TradeHistory.builder()
                         .participants(List.of(
-                                Participant.builder()
-                                        .userId(userId)
-                                        .approveTrade(true)
-                                        .build(),
-                                Participant.builder()
-                                        .userId(replyUserId)
-                                        .build()
+                                userParticipant,
+                                replyParticipant
                         ))
                         .messageId(MessageId.builder()
                                 .messageId(sentMessage.getMessageId())
                                 .chatId(sentMessage.getChatId())
                                 .build())
                         .timestamp(Instant.now())
+                        //set expire because trade is being in approval process
                         .expireTime(LocalDateTime.now().plusDays(7).toInstant(OffsetDateTime.now().getOffset()))
                         .build()
         );

@@ -8,5 +8,6 @@ import lombok.Data;
 @Builder(toBuilder = true)
 public class Participant {
     private UserId userId;
+    private String fullName;
     private boolean approveTrade;
 }

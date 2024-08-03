@@ -1,5 +1,6 @@
 package dzhezlov.dvfinanceexchanger.command;
 
+import dzhezlov.dvfinanceexchanger.command.utils.FormatUtils;
 import dzhezlov.dvfinanceexchanger.config.TradeProperties;
 import dzhezlov.dvfinanceexchanger.repository.CommandHistoryRepository;
 import dzhezlov.dvfinanceexchanger.repository.TradeHistoryRepository;
@@ -12,6 +13,7 @@ import dzhezlov.dvfinanceexchanger.service.UserJoinedService;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.extensions.bots.commandbot.commands.IBotCommand;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -22,6 +24,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static dzhezlov.dvfinanceexchanger.command.utils.CommandUtils.toUserId;
@@ -80,19 +83,32 @@ public class TradeCommand implements IBotCommand {
                         .filter(participant -> !participant.getUserId().equals(userId))
                         .distinct()
                         .count();
+                Set<String> previousFullNames = tradeHistories.stream()
+                        .flatMap(tradeHistory -> tradeHistory.getParticipants().stream())
+                        .filter(participant -> participant.getUserId().equals(userId))
+                        .map(Participant::getFullName)
+                        .filter(StringUtils::isNotEmpty)
+                        .collect(Collectors.toSet());
 
                 StringBuilder answerText = new StringBuilder()
                         .append("Обменов: ")
                         .append(countExchanges)
-                        .append("\nС уникальными участниками:  ")
+                        .append("\nС уникальными участниками: ")
                         .append(uniqueSenders);
+
+                if (!previousFullNames.isEmpty()) {
+                    answerText.append("\n\nПредыдущие имена: ")
+                            .append(FormatUtils.toList(previousFullNames));
+                }
+
                 trustUserRepository.findById(userId)
-                        .ifPresent(user -> answerText.append("\nМожно доверять: ✅"));
+                        .ifPresent(user -> answerText.append("\n\nМожно доверять: ✅"));
 
                 SendMessage answer = new SendMessage();
                 answer.setChatId(message.getChatId());
                 answer.setReplyToMessageId(message.getMessageId());
                 answer.setText(answerText.toString());
+                answer.enableHtml(true);
 
                 absSender.execute(answer);
 

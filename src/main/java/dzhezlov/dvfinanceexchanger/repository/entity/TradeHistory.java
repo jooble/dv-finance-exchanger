@@ -21,7 +21,6 @@ public class TradeHistory {
     private Instant timestamp;
     @Indexed
     private MessageId messageId;
-
     @Indexed(expireAfterSeconds = 0)
     private Instant expireTime;
 }
