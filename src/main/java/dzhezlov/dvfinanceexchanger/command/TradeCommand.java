@@ -28,6 +28,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static dzhezlov.dvfinanceexchanger.command.utils.CommandUtils.toUserId;
+import static dzhezlov.dvfinanceexchanger.command.utils.FormatUtils.toUserFullName;
 
 @Component
 @RequiredArgsConstructor
@@ -55,6 +56,7 @@ public class TradeCommand implements IBotCommand {
     public void processMessage(AbsSender absSender, Message message, String[] arguments) {
         if (ArrayUtils.isNotEmpty(arguments)) {
             UserId userId = toUserId(message);
+            String userFullName = toUserFullName(message.getFrom());
             Instant dataJoined = userJoinedService.getDataJoined(userId);
 
             List<TradeHistory> tradeHistories = tradeHistoryRepository.findByParticipantsUserIdIn(userId)
@@ -88,6 +90,7 @@ public class TradeCommand implements IBotCommand {
                         .filter(participant -> participant.getUserId().equals(userId))
                         .map(Participant::getFullName)
                         .filter(StringUtils::isNotEmpty)
+                        .filter(fullName -> !StringUtils.equals(userFullName, fullName))
                         .collect(Collectors.toSet());
 
                 StringBuilder answerText = new StringBuilder()
@@ -96,7 +99,7 @@ public class TradeCommand implements IBotCommand {
                         .append("\nС уникальными участниками: ")
                         .append(uniqueSenders);
 
-                if (previousFullNames.size() > 1) {
+                if (!previousFullNames.isEmpty()) {
                     answerText.append("\n\nПредыдущие имена: ")
                             .append(FormatUtils.toList(previousFullNames));
                 }

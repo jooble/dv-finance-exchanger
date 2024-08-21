@@ -83,8 +83,8 @@ public class CheckCommand implements IBotCommand {
                     .append(uniqueSenders);
             Optional<TrustUser> trustUser = trustUserRepository.findById(recipient);
 
-            if (previousFullNames.size() > 1) {
-                answerText.append("\n\nПредыдущие имена: ")
+            if (!previousFullNames.isEmpty()) {
+                answerText.append("\n\nВсе имена: ")
                         .append(FormatUtils.toList(previousFullNames));
             }
 
