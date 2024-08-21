@@ -96,7 +96,7 @@ public class TradeCommand implements IBotCommand {
                         .append("\nС уникальными участниками: ")
                         .append(uniqueSenders);
 
-                if (!previousFullNames.isEmpty()) {
+                if (previousFullNames.size() > 1) {
                     answerText.append("\n\nПредыдущие имена: ")
                             .append(FormatUtils.toList(previousFullNames));
                 }
