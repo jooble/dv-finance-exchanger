@@ -25,9 +25,9 @@ public class FormatUtils {
                 "</a>";
     }
 
-    public static String toMention(String id, String fullName) {
+    public static String toMention(Participant participant, String fullName) {
         return "<a href='tg://user?id=" +
-                id +
+                participant.getUserId().getUserId() +
                 "'>" +
                 fullName +
                 "</a>";
