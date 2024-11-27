@@ -86,7 +86,7 @@ public class StatsCommand implements IBotCommand {
 
                 result
                         .append("- ")
-                        .append(toMention(participant))
+                        .append(toMention(getLastTradeHistoryParticipant(participant, tradeHistories)))
                         .append("\n")
                         .append(" Обменов - ")
                         .append(tradeHistories.size())
@@ -107,5 +107,17 @@ public class StatsCommand implements IBotCommand {
         }
 
         messageCleaner.cleanAfterDelay(absSender, message, 3);
+    }
+
+    private static Participant getLastTradeHistoryParticipant(Participant participant, List<TradeHistory> tradeHistories) {
+        return tradeHistories.stream()
+                .filter(tradeHistory -> tradeHistory.getTimestamp() != null)
+                .sorted((t1, t2) -> t2.getTimestamp().compareTo(t1.getTimestamp()))
+                .findFirst()
+                .get()
+                .getParticipants().stream()
+                .filter(lastTradeParticipant -> lastTradeParticipant.equals(participant))
+                .findFirst()
+                .get();
     }
 }
