@@ -1,5 +1,6 @@
 package dzhezlov.dvfinanceexchanger.command.utils;
 
+import dzhezlov.dvfinanceexchanger.repository.entity.Participant;
 import org.apache.commons.lang3.StringUtils;
 import org.telegram.telegrambots.meta.api.objects.User;
 
@@ -13,6 +14,14 @@ public class FormatUtils {
                 user.getId() +
                 "'>" +
                 toUserFullName(user) +
+                "</a>";
+    }
+
+    public static String toMention(Participant participant) {
+        return "<a href='tg://user?id=" +
+                participant.getUserId().getUserId() +
+                "'>" +
+                participant.getFullName() +
                 "</a>";
     }
 

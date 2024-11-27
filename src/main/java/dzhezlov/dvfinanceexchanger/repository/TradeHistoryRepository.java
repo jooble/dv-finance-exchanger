@@ -12,7 +12,9 @@ import java.util.Optional;
 @Repository
 public interface TradeHistoryRepository extends MongoRepository<TradeHistory, String> {
 
-    List<TradeHistory> findByParticipantsUserIdIn(UserId recipient);
+    List<TradeHistory> findByParticipantsUserIdIn(UserId userId);
+
+    List<TradeHistory> findAllByParticipantsUserIdIn(UserId userId);
 
     Optional<TradeHistory> findByMessageId(MessageId messageId);
 
