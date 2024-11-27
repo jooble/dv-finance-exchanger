@@ -42,7 +42,7 @@ public class StatsCommand implements IBotCommand {
     @Override
     public void processMessage(AbsSender absSender, Message message, String[] strings) {
         if (message.isSuperGroupMessage() && isAdminMessage(message, absSender)) {
-            Map<Participant, List<TradeHistory>> allHistory = tradeHistoryRepository.findAllByParticipantsUserIdIn(toUserId(message)).stream()
+            Map<Participant, List<TradeHistory>> allHistory = tradeHistoryRepository.findAll().stream()
                     .filter(tradeHistory -> tradeHistory.getMessageId().getChatId().equals(message.getChatId()))
                     .filter(tradeHistory ->
                             tradeHistory.getParticipants().stream()
