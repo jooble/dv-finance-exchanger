@@ -8,7 +8,6 @@ import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.extensions.bots.commandbot.commands.IBotCommand;
-import org.telegram.telegrambots.meta.api.methods.groupadministration.GetChatMember;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.bots.AbsSender;
@@ -99,7 +98,7 @@ public class StatsCommand implements IBotCommand {
 
                 result
                         .append("- ")
-                        .append(getUserFullName(absSender, lastTradeHistoryParticipant))
+                        .append(getUserFullName(lastTradeHistoryParticipant))
                         .append("\n")
                         .append(" Обменов - ")
                         .append(tradeHistories.size())
@@ -122,22 +121,12 @@ public class StatsCommand implements IBotCommand {
         messageCleaner.cleanAfterDelay(absSender, message, 3);
     }
 
-    private static String getUserFullName(AbsSender absSender, Participant lastTradeHistoryParticipant) throws TelegramApiException {
-        String fullName = toMention(lastTradeHistoryParticipant);
-
-        if (StringUtils.isEmpty(fullName)) {
-            fullName = toMention(absSender.execute(GetChatMember.builder()
-                            .chatId(lastTradeHistoryParticipant.getUserId().getChatId())
-                            .userId(lastTradeHistoryParticipant.getUserId().getUserId())
-                            .build())
-                    .getUser());
+    private static String getUserFullName(Participant participant) throws TelegramApiException {
+        if (StringUtils.isEmpty(participant.getFullName())) {
+            return "Неопознанная тыква";
+        } else {
+            return toMention(participant);
         }
-
-        if (StringUtils.isEmpty(fullName)) {
-            fullName = "Неопознанная тыква";
-        }
-
-        return fullName;
     }
 
     private static Participant getLastTradeHistoryParticipant(Participant participant, List<TradeHistory> tradeHistories) {
