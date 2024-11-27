@@ -17,7 +17,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static dzhezlov.dvfinanceexchanger.command.utils.CommandUtils.isAdminMessage;
-import static dzhezlov.dvfinanceexchanger.command.utils.CommandUtils.toUserId;
 import static dzhezlov.dvfinanceexchanger.command.utils.FormatUtils.toMention;
 import static java.util.stream.Collectors.mapping;
 
@@ -43,7 +42,15 @@ public class StatsCommand implements IBotCommand {
     public void processMessage(AbsSender absSender, Message message, String[] strings) {
         if (message.isSuperGroupMessage() && isAdminMessage(message, absSender)) {
             Map<Participant, List<TradeHistory>> allHistory = tradeHistoryRepository.findAll().stream()
-                    .filter(tradeHistory -> tradeHistory.getMessageId().getChatId().equals(message.getChatId()))
+                    .filter(tradeHistory -> {
+                        MessageId tradeHistoryMessageId = tradeHistory.getMessageId();
+
+                        if (tradeHistoryMessageId == null) {
+                            return false;
+                        }
+
+                        return message.getChatId().equals(tradeHistoryMessageId.getChatId());
+                    })
                     .filter(tradeHistory ->
                             tradeHistory.getParticipants().stream()
                                     .allMatch(Participant::isApproveTrade)
