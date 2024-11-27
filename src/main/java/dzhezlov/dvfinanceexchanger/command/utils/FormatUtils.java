@@ -25,6 +25,14 @@ public class FormatUtils {
                 "</a>";
     }
 
+    public static String toMention(String id, String fullName) {
+        return "<a href='tg://user?id=" +
+                id +
+                "'>" +
+                fullName +
+                "</a>";
+    }
+
     public static String toUserFullName(User user) {
         StringBuilder builder = new StringBuilder()
                 .append(trimToEmpty(user.getFirstName()));
