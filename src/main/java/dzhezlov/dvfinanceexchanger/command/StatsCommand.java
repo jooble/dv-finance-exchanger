@@ -44,7 +44,7 @@ public class StatsCommand implements IBotCommand {
     @Override
     public void processMessage(AbsSender absSender, Message message, String[] strings) {
         if (message.isSuperGroupMessage() && isAdminMessage(message, absSender)) {
-            Map<Participant, List<TradeHistory>> allHistory = tradeHistoryRepository.findAll().stream()
+            List<TradeHistory> allHistory = tradeHistoryRepository.findAll().stream()
                     .filter(tradeHistory -> {
                         MessageId tradeHistoryMessageId = tradeHistory.getMessageId();
 
@@ -58,6 +58,9 @@ public class StatsCommand implements IBotCommand {
                             tradeHistory.getParticipants().stream()
                                     .allMatch(Participant::isApproveTrade)
                     )
+                    .collect(Collectors.toList());
+
+            Map<Participant, List<TradeHistory>> allHistoryGroupedByParticipant = allHistory.stream()
                     .flatMap(tradeHistory ->
                             tradeHistory.getParticipants().stream()
                                     .map(participant -> new AbstractMap.SimpleEntry<>(participant, tradeHistory))
@@ -67,7 +70,7 @@ public class StatsCommand implements IBotCommand {
                             mapping(Map.Entry::getValue, Collectors.toList())
                     ));
 
-            List<Participant> topParticipants = allHistory.entrySet().stream()
+            List<Participant> topParticipants = allHistoryGroupedByParticipant.entrySet().stream()
                     .sorted((entry1, entry2) -> Long.compare(entry2.getValue().size(), entry1.getValue().size()))
                     .limit(10)
                     .map(Map.Entry::getKey)
@@ -79,8 +82,13 @@ public class StatsCommand implements IBotCommand {
 
             StringBuilder result = new StringBuilder();
 
+            result.append("Успешных обменов за все время - ")
+                    .append(allHistory.size())
+                    .append("\n")
+                    .append("\n");
+
             for (Participant participant : topParticipants) {
-                List<TradeHistory> tradeHistories = allHistory.get(participant);
+                List<TradeHistory> tradeHistories = allHistoryGroupedByParticipant.get(participant);
                 long uniqueTrades = tradeHistories.stream()
                         .flatMap(tradeHistory -> tradeHistory.getParticipants().stream())
                         .filter(tradeParticipant -> !tradeParticipant.getUserId().equals(participant.getUserId()))
@@ -124,6 +132,11 @@ public class StatsCommand implements IBotCommand {
                             .build())
                     .getUser());
         }
+
+        if (StringUtils.isEmpty(fullName)) {
+            fullName = "Неопознанная тыква";
+        }
+
         return fullName;
     }
 
