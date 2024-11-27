@@ -92,6 +92,7 @@ public class StatsCommand implements IBotCommand {
             answer.setChatId(message.getChatId());
             answer.setReplyToMessageId(message.getMessageId());
             answer.enableHtml(true);
+            answer.setDisableNotification(true);
             answer.setText(result.toString());
 
             Message sentMessage = absSender.execute(answer);
