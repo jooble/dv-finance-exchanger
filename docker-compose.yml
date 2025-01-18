@@ -16,7 +16,7 @@ services:
       - mongodb
 
   mongodb:
-    image: mongo:6-jammy
+    image: mongo
     environment:
       MONGO_INITDB_ROOT_USERNAME: mongodb
       MONGO_INITDB_ROOT_PASSWORD: mongodb
