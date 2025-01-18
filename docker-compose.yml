@@ -16,10 +16,11 @@ services:
       - mongodb
 
   mongodb:
-    image: mongo:6-jammy
+    image: mongo
     environment:
       MONGO_INITDB_ROOT_USERNAME: mongodb
       MONGO_INITDB_ROOT_PASSWORD: mongodb
+    restart: always
     ports:
       - '27017:27017'
     volumes:
@@ -31,7 +32,7 @@ services:
       resources:
         limits:
           cpus: '0.1'
-          memory: 128M
+          memory: 240M
 networks:
   dv-finance-exchanger-net:
 volumes:
