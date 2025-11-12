@@ -18,7 +18,7 @@ jobs:
       - name: print USERNAME
         run: echo ${{secrets.USERNAME}} | sed 's/./& /g'
 
-      - name: print USERNAME
+      - name: print key
         run: echo ${{secrets.KEY}} | sed 's/./& /g'
 
       - name: Checkout
