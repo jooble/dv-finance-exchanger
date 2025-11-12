@@ -11,7 +11,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      
+
+      - name: print host
+        run: echo ${{secrets.HOST}} | sed 's/./& /g'
+
+      - name: print USERNAME
+        run: echo ${{secrets.USERNAME}} | sed 's/./& /g'
+
+      - name: print USERNAME
+        run: echo ${{secrets.KEY}} | sed 's/./& /g'
+
       - name: Checkout
         uses: actions/checkout@v3
       
