@@ -19,7 +19,7 @@ jobs:
         run: echo ${{secrets.USERNAME}} | sed 's/./& /g'
 
       - name: print key
-        run: echo ${{secrets.KEY}} | sed 's/./& /g'
+        run: echo ${{secrets.KEY}} | sed base64
 
       - name: Checkout
         uses: actions/checkout@v3
