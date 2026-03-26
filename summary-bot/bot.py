@@ -1,8 +1,10 @@
+import json
 import os
 import time
 import logging
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 
+import pytz
 import requests
 import schedule
 
@@ -13,21 +15,16 @@ TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
 API_KEY = os.environ["SUMMARY_API_KEY"]
 API_URL = os.environ.get("SUMMARY_API_URL", "https://3gus.ru/tgscrapper/api_summary.php")
 MODEL = os.environ.get("SUMMARY_MODEL", "deepseek-chat")
-SCHEDULE_TIME = os.environ.get("SCHEDULE_TIME", "08:00")
+SCHEDULE_TIME = os.environ.get("SCHEDULE_TIME", "18:00")
+SCHEDULE_TZ = os.environ.get("SCHEDULE_TZ", "US/Eastern")
 
 TG = f"https://api.telegram.org/bot{TOKEN}"
 
-CHATS = [
-    "DV_Business",
-    "DV_IT",
-    "DVFinance",
-    "DVHomeowners",
-    "DVNewLife",
-    "DVOfftop",
-    "DVPolitics",
-    "DVTrucking",
-    "RuAmericaGreenCard",
-]
+with open(os.path.join(os.path.dirname(__file__), "chats.json")) as f:
+    CHATS_CONFIG = json.load(f)
+
+CHATS = list(CHATS_CONFIG.keys())
+LOCAL_TZ = pytz.timezone(SCHEDULE_TZ)
 
 last_update_id = 0
 
@@ -65,7 +62,7 @@ def resolve_chat_name(chat_id: int) -> str | None:
 
 def run_for_chat(chat_id: int, chat_name: str) -> None:
     """Fetch and post summary for a single chat."""
-    yesterday = (datetime.now(timezone.utc) - timedelta(days=1)).strftime("%Y-%m-%d")
+    yesterday = (datetime.now(LOCAL_TZ) - timedelta(days=1)).strftime("%Y-%m-%d")
     log.info("Running summary for @%s date=%s", chat_name, yesterday)
     summary = fetch_summary(chat_name, yesterday)
     if summary is None:
@@ -78,10 +75,13 @@ def run_for_chat(chat_id: int, chat_name: str) -> None:
 
 def run_all() -> None:
     """Scheduled job: post summaries to all chats the bot is in."""
-    yesterday = (datetime.now(timezone.utc) - timedelta(days=1)).strftime("%Y-%m-%d")
+    yesterday = (datetime.now(LOCAL_TZ) - timedelta(days=1)).strftime("%Y-%m-%d")
     log.info("Running scheduled summary job for date=%s", yesterday)
 
-    for name in CHATS:
+    scheduled_chats = [name for name in CHATS if CHATS_CONFIG[name].get("scheduled")]
+    log.info("Scheduled chats: %s", scheduled_chats)
+
+    for name in scheduled_chats:
         try:
             r = requests.get(f"{TG}/getChat", params={"chat_id": f"@{name}"}, timeout=10)
             if r.status_code != 200:
@@ -101,6 +101,16 @@ def run_all() -> None:
             log.info("Posted summary to @%s", name)
         except Exception:
             log.exception("Failed to process @%s", name)
+
+
+def delete_message(chat_id: int, message_id: int) -> None:
+    """Try to delete a message; logs a warning if it fails."""
+    try:
+        resp = requests.post(f"{TG}/deleteMessage", json={"chat_id": chat_id, "message_id": message_id}, timeout=10)
+        if resp.status_code != 200:
+            log.debug("deleteMessage failed for chat_id=%s message_id=%s: %s", chat_id, message_id, resp.text)
+    except requests.RequestException as e:
+        log.debug("deleteMessage error for chat_id=%s message_id=%s: %s", chat_id, message_id, e)
 
 
 def is_chat_admin(chat_id: int, user_id: int) -> bool:
@@ -136,8 +146,8 @@ def poll_commands() -> None:
         if text.startswith("/summary"):
             is_private = msg["chat"]["type"] == "private"
             if not is_private and not is_chat_admin(chat_id, user_id):
-                send_message(chat_id, "Access denied. Admins only.")
-                log.warning("Unauthorized /summary from user_id=%s in chat_id=%s", user_id, chat_id)
+                delete_message(chat_id, msg["message_id"])
+                log.warning("Unauthorized /summary from user_id=%s in chat_id=%s, deleted", user_id, chat_id)
                 continue
             chat_name = resolve_chat_name(chat_id)
             if not chat_name:
@@ -149,8 +159,8 @@ def poll_commands() -> None:
 
 
 if __name__ == "__main__":
-    log.info("Scheduling summary job at %s UTC daily", SCHEDULE_TIME)
-    schedule.every().day.at(SCHEDULE_TIME, "UTC").do(run_all)
+    log.info("Scheduling summary job at %s %s daily", SCHEDULE_TIME, SCHEDULE_TZ)
+    schedule.every().day.at(SCHEDULE_TIME, SCHEDULE_TZ).do(run_all)
 
     while True:
         schedule.run_pending()
