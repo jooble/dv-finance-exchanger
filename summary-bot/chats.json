@@ -1,0 +1,29 @@
+{
+  "DV_Business": {
+    "scheduled": false
+  },
+  "DV_IT": {
+    "scheduled": false
+  },
+  "DVFinance": {
+    "scheduled": true
+  },
+  "DVHomeowners": {
+    "scheduled": false
+  },
+  "DVNewLife": {
+    "scheduled": true
+  },
+  "DVOfftop": {
+    "scheduled": true
+  },
+  "DVPolitics": {
+    "scheduled": true
+  },
+  "DVTrucking": {
+    "scheduled": true
+  },
+  "RuAmericaGreenCard": {
+    "scheduled": false
+  }
+}
