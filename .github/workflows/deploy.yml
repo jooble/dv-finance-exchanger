@@ -36,6 +36,12 @@ jobs:
           -Djib.to.auth.password=${{ secrets.GITHUB_TOKEN }}
         shell: bash
 
+      - name: Build summary-bot image
+        run: docker build -t ghcr.io/jooble/dv-finance-summary-bot:latest ./summary-bot
+
+      - name: Push summary-bot image
+        run: docker push ghcr.io/jooble/dv-finance-summary-bot:latest
+
       - name: scp docker-compose.yml to aws
         uses: appleboy/scp-action@v0.1.4
         with:
@@ -55,4 +61,8 @@ jobs:
           script: |
             cd ~/dv/
             docker pull ghcr.io/jooble/dv-finance-exchanger:latest
-            SPRING_TELEGRAM_TOKEN=${{ secrets.TELEGRAM_TOKEN }} docker-compose up -d
+            docker pull ghcr.io/jooble/dv-finance-summary-bot:latest
+            SPRING_TELEGRAM_TOKEN=${{ secrets.TELEGRAM_TOKEN }} \
+            TELEGRAM_BOT_TOKEN=${{ secrets.SUMMARY_BOT_TOKEN }} \
+            SUMMARY_API_KEY=${{ secrets.SUMMARY_API_KEY }} \
+            docker-compose up -d

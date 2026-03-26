@@ -33,6 +33,20 @@ services:
         limits:
           cpus: '0.1'
           memory: 240M
+  summary-bot:
+    image: ghcr.io/jooble/dv-finance-summary-bot:latest
+    networks:
+      - dv-finance-exchanger-net
+    restart: always
+    environment:
+      - TELEGRAM_BOT_TOKEN
+      - SUMMARY_API_KEY
+    deploy:
+      resources:
+        limits:
+          cpus: '0.05'
+          memory: 64M
+
 networks:
   dv-finance-exchanger-net:
 volumes:
