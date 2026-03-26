@@ -2,8 +2,9 @@ import json
 import os
 import time
 import logging
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 
+import pytz
 import requests
 import schedule
 
@@ -23,6 +24,7 @@ with open(os.path.join(os.path.dirname(__file__), "chats.json")) as f:
     CHATS_CONFIG = json.load(f)
 
 CHATS = list(CHATS_CONFIG.keys())
+LOCAL_TZ = pytz.timezone(SCHEDULE_TZ)
 
 last_update_id = 0
 
@@ -60,7 +62,7 @@ def resolve_chat_name(chat_id: int) -> str | None:
 
 def run_for_chat(chat_id: int, chat_name: str) -> None:
     """Fetch and post summary for a single chat."""
-    yesterday = (datetime.now(timezone.utc) - timedelta(days=1)).strftime("%Y-%m-%d")
+    yesterday = (datetime.now(LOCAL_TZ) - timedelta(days=1)).strftime("%Y-%m-%d")
     log.info("Running summary for @%s date=%s", chat_name, yesterday)
     summary = fetch_summary(chat_name, yesterday)
     if summary is None:
@@ -73,7 +75,7 @@ def run_for_chat(chat_id: int, chat_name: str) -> None:
 
 def run_all() -> None:
     """Scheduled job: post summaries to all chats the bot is in."""
-    yesterday = (datetime.now(timezone.utc) - timedelta(days=1)).strftime("%Y-%m-%d")
+    yesterday = (datetime.now(LOCAL_TZ) - timedelta(days=1)).strftime("%Y-%m-%d")
     log.info("Running scheduled summary job for date=%s", yesterday)
 
     scheduled_chats = [name for name in CHATS if CHATS_CONFIG[name].get("scheduled")]
@@ -102,11 +104,13 @@ def run_all() -> None:
 
 
 def delete_message(chat_id: int, message_id: int) -> None:
-    """Try to delete a message; fails silently if bot lacks permissions."""
+    """Try to delete a message; logs a warning if it fails."""
     try:
-        requests.post(f"{TG}/deleteMessage", json={"chat_id": chat_id, "message_id": message_id}, timeout=10)
-    except Exception:
-        pass
+        resp = requests.post(f"{TG}/deleteMessage", json={"chat_id": chat_id, "message_id": message_id}, timeout=10)
+        if resp.status_code != 200:
+            log.debug("deleteMessage failed for chat_id=%s message_id=%s: %s", chat_id, message_id, resp.text)
+    except requests.RequestException as e:
+        log.debug("deleteMessage error for chat_id=%s message_id=%s: %s", chat_id, message_id, e)
 
 
 def is_chat_admin(chat_id: int, user_id: int) -> bool:
