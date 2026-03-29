@@ -3,13 +3,13 @@
     "scheduled": false
   },
   "DV_IT": {
-    "scheduled": false
+    "scheduled": true
   },
   "DVFinance": {
     "scheduled": true
   },
   "DVHomeowners": {
-    "scheduled": false
+    "scheduled": true
   },
   "DVNewLife": {
     "scheduled": true
