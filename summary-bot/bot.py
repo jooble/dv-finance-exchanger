@@ -33,7 +33,7 @@ def fetch_summary(chat: str, date: str) -> str | None:
     resp = requests.get(API_URL, params={"date": date, "chat": chat, "model": MODEL, "key": API_KEY}, timeout=120)
     resp.raise_for_status()
     text = resp.text.strip()
-    if not text or "нет значимых событий" in text.lower():
+    if not text or "нет значимых событий" in text.lower() or "не было пользовательских сообщений для сводки" in text.lower():
         return None
     return text
 
