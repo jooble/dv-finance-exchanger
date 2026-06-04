@@ -17,6 +17,8 @@ API_URL = os.environ.get("SUMMARY_API_URL", "https://3gus.ru/tgscrapper/api_summ
 MODEL = os.environ.get("SUMMARY_MODEL", "deepseek-chat")
 SCHEDULE_TIME = os.environ.get("SCHEDULE_TIME", "18:00")
 SCHEDULE_TZ = os.environ.get("SCHEDULE_TZ", "US/Eastern")
+# User IDs allowed to run /summary anywhere, even if not a chat admin (comma/space separated).
+ADMIN_IDS = {int(x) for x in os.environ.get("SUMMARY_ADMIN_IDS", "").replace(",", " ").split()}
 
 TG = f"https://api.telegram.org/bot{TOKEN}"
 
@@ -27,6 +29,25 @@ CHATS = list(CHATS_CONFIG.keys())
 LOCAL_TZ = pytz.timezone(SCHEDULE_TZ)
 
 last_update_id = 0
+
+
+def api_chat_name(name: str) -> str:
+    """Name sent to the summary API. Defaults to the config key, override with 'api_name'."""
+    return CHATS_CONFIG[name].get("api_name", name)
+
+
+def resolve_chat_id(name: str) -> int | None:
+    """Telegram chat_id for a configured chat: explicit 'chat_id', else @name lookup."""
+    cfg = CHATS_CONFIG[name]
+    if "chat_id" in cfg:
+        return cfg["chat_id"]
+    try:
+        r = requests.get(f"{TG}/getChat", params={"chat_id": f"@{name}"}, timeout=10)
+        if r.status_code == 200:
+            return r.json()["result"]["id"]
+    except Exception:
+        pass
+    return None
 
 
 def fetch_summary(chat: str, date: str) -> str | None:
@@ -51,6 +72,11 @@ def send_message(chat_id: int, text: str) -> None:
 def resolve_chat_name(chat_id: int) -> str | None:
     """Match a Telegram chat_id to one of the known API chat names."""
     for name in CHATS:
+        if CHATS_CONFIG[name].get("chat_id") == chat_id:
+            return name
+    for name in CHATS:
+        if "chat_id" in CHATS_CONFIG[name]:
+            continue
         try:
             r = requests.get(f"{TG}/getChat", params={"chat_id": f"@{name}"}, timeout=10)
             if r.status_code == 200 and r.json()["result"]["id"] == chat_id:
@@ -64,7 +90,7 @@ def run_for_chat(chat_id: int, chat_name: str) -> None:
     """Fetch and post summary for a single chat."""
     yesterday = (datetime.now(LOCAL_TZ) - timedelta(days=1)).strftime("%Y-%m-%d")
     log.info("Running summary for @%s date=%s", chat_name, yesterday)
-    summary = fetch_summary(chat_name, yesterday)
+    summary = fetch_summary(api_chat_name(chat_name), yesterday)
     if summary is None:
         log.info("No meaningful summary for @%s", chat_name)
         send_message(chat_id, "No summary available for yesterday.")
@@ -82,18 +108,13 @@ def run_all() -> None:
     log.info("Scheduled chats: %s", scheduled_chats)
 
     for name in scheduled_chats:
-        try:
-            r = requests.get(f"{TG}/getChat", params={"chat_id": f"@{name}"}, timeout=10)
-            if r.status_code != 200:
-                log.info("Bot not in @%s, skipping", name)
-                continue
-            chat_id = r.json()["result"]["id"]
-        except Exception:
+        chat_id = resolve_chat_id(name)
+        if chat_id is None:
             log.info("Cannot resolve @%s, skipping", name)
             continue
 
         try:
-            summary = fetch_summary(name, yesterday)
+            summary = fetch_summary(api_chat_name(name), yesterday)
             if summary is None:
                 log.info("No meaningful summary for @%s, skipping", name)
                 continue
@@ -145,7 +166,8 @@ def poll_commands() -> None:
 
         if text.startswith("/summary"):
             is_private = msg["chat"]["type"] == "private"
-            if not is_private and not is_chat_admin(chat_id, user_id):
+            is_operator = user_id in ADMIN_IDS
+            if not is_private and not is_operator and not is_chat_admin(chat_id, user_id):
                 delete_message(chat_id, msg["message_id"])
                 log.warning("Unauthorized /summary from user_id=%s in chat_id=%s, deleted", user_id, chat_id)
                 continue
