@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 
 TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
 API_KEY = os.environ["SUMMARY_API_KEY"]
-API_URL = os.environ.get("SUMMARY_API_URL", "https://3gus.ru/tgscrapper/api_summary.php")
+API_URL = os.environ.get("SUMMARY_API_URL", "https://3gus.net/tgscrapper/api_summary.php")
 MODEL = os.environ.get("SUMMARY_MODEL", "deepseek-chat")
 SCHEDULE_TIME = os.environ.get("SCHEDULE_TIME", "18:00")
 SCHEDULE_TZ = os.environ.get("SCHEDULE_TZ", "US/Eastern")
