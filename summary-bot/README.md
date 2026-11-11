@@ -56,7 +56,7 @@ Friendly key decoupled from both the Telegram id and the API name:
 |----------------------|----------|-----------------------------------------------|-------------|
 | `TELEGRAM_BOT_TOKEN` | yes      | —                                             | Telegram Bot API token. |
 | `SUMMARY_API_KEY`    | yes      | —                                             | API key for the summary endpoint. |
-| `SUMMARY_API_URL`    | no       | `https://3gus.ru/tgscrapper/api_summary.php`  | Summary API base URL. |
+| `SUMMARY_API_URL`    | no       | `https://telegram-chat-summary-api.3gus.click/api_summary.php`  | Summary API base URL. |
 | `SUMMARY_MODEL`      | no       | `deepseek-chat`                               | Model passed to the summary API. |
 | `SCHEDULE_TIME`      | no       | `18:00`                                       | Daily run time (`HH:MM`). |
 | `SCHEDULE_TZ`        | no       | `US/Eastern`                                  | Timezone for the schedule and the "yesterday" date. |
